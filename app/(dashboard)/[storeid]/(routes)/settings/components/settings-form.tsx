@@ -1,10 +1,13 @@
 "use client"
 
 import * as z from "zod"
+import axios from "axios"
 import { Store } from "@prisma/client"
 import { Trash } from "lucide-react"
 import { useForm } from "react-hook-form"
+import { toast } from "react-hot-toast"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { useParams, useRouter } from "next/navigation"
 
 import { Heading } from "@/components/ui/heading"
 import { Button } from "@/components/ui/button"
@@ -16,12 +19,9 @@ import {
   FormField,
   FormItem,
   FormLabel,
+  FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-
-interface SettingsFormProps {
-  initialData: Store
-}
 
 const formSchema = z.object({
   name: z.string().min(1),
@@ -29,7 +29,14 @@ const formSchema = z.object({
 
 type SettingsFormValues = z.infer<typeof formSchema>
 
+interface SettingsFormProps {
+  initialData: Store
+}
+
 export const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
+  const params = useParams()
+  const router = useRouter()
+
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
 
@@ -39,14 +46,28 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
   })
 
   const onSubmit = async (data: SettingsFormValues) => {
-    console.log(data)
+    try {
+      setLoading(true)
+      await axios.patch(`/api/stores/${params.storeId}`, data)
+      router.refresh()
+      toast.success("Store updated.")
+    } catch (error) {
+      toast.error("Something went wrong")
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
     <>
       <div className="flex items-center justify-between">
         <Heading title="Settings" description="Manage store preferences." />
-        <Button variant="destructive" size="sm" onClick={() => {}}>
+        <Button
+          disabled={loading}
+          variant="destructive"
+          size="icon"
+          onClick={() => setOpen(true)}
+        >
           <Trash className="h-4 w-4" />
         </Button>
       </div>
@@ -70,10 +91,14 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({ initialData }) => {
                       {...field}
                     />
                   </FormControl>
+                  <FormMessage />
                 </FormItem>
               )}
             />
           </div>
+          <Button disabled={loading} className="ml-auto" type="submit">
+            Save changes
+          </Button>
         </form>
       </Form>
     </>
