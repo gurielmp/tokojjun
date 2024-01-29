@@ -8,10 +8,10 @@ import { Heading } from "@/components/ui/heading"
 import { Separator } from "@/components/ui/separator"
 import { DataTable } from "@/components/ui/data-table"
 
-import { BillboardColumns, columns } from "./columns"
+import { BillboardColumn, columns } from "./columns"
 
 interface BillboardClientProps {
-  data: BillboardColumns[]
+  data: BillboardColumn[]
 }
 
 export const BillboardClient: React.FC<BillboardClientProps> = ({ data }) => {
