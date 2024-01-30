@@ -8,7 +8,9 @@ export async function GET(
   { params }: { params: { billboardId: string } }
 ) {
   try {
-    const { userId } = auth()
+    if (!params.billboardId) {
+      return new NextResponse("Billboard id is required", { status: 400 });
+    }
 
     const billboard = await prismadb.billboard.findUnique({
       where: {
@@ -29,12 +31,13 @@ export async function PATCH(
 ) {
   try {
     const { userId } = auth()
+
     const body = await req.json()
 
     const { label, imageUrl } = body
 
     if (!userId) {
-      return new NextResponse("Unauthenticated", { status: 401 })
+      return new NextResponse("Unauthenticated", { status: 403 })
     }
 
     if (!label) {
@@ -57,7 +60,7 @@ export async function PATCH(
     })
 
     if (!storeByUserId) {
-      return new NextResponse("Unauthorized", { status: 403 })
+      return new NextResponse("Unauthorized", { status: 405 })
     }
 
     const billboard = await prismadb.billboard.updateMany({
